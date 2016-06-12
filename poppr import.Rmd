@@ -1,0 +1,40 @@
+---
+title: "Data manipulation"
+author: "Jay Martiniuk"
+date: "June 11, 2016"
+output: html_document
+---
+Combining design and data files for OCP data, 2013-2015
+```{r}
+ocpDes <- read.csv("ocpDes.csv", header = TRUE)
+ocpDat <- read.csv("ocpDat.csv", header = TRUE)
+str(ocp13Des)
+str(ocp13Dat)
+#keep all unmatched *S. bayanus* records from the design file in the combined output data frame (all.x = T)
+ocp <- merge(ocpDes, ocpDat, all.x = TRUE, row.names = F)
+str(ocp)
+#export combined file for editing (add in species)
+write.csv(ocp, "ocp_all.csv", row.names = TRUE)
+ocp <- read.csv("ocp_all_mod.csv")
+#Add poppr id column
+require(dplyr)
+ocp <- mutate(ocp, poppr_id = paste(species, vintage, vineyard, fermRep, timepoint, sep = "_"))
+# change NAs for Su to 1 so that they are not omitted from import into poppr
+ocpPoppr <- ocp[, c(12, 29, 13:28)]
+colnames(ocpPoppr) <- c("isolateId", "popprId", "C3", "", "C5", "", "C8", "", "C4",  "", "O91", "", "AT4", "", "SCAAT3", "", "OO9", "")
+#make poppr-formatted file
+# export relevant info. Convert to genalex format in excel (Add two rows, top row containing no. loci, no. samples, no. pops. Change loci names to 1 per locus, no numbering)
+write.csv(ocpPoppr, "ocpPoppr.csv", row.names = F)
+#import genalex file
+ocpCommPoppr <- read.genalex("ocpPoppr.csv")
+
+gendist <- bruvo.dist(ocpCommPoppr, replen = c(3,2,3,3,3,2,3,3))
+gendist <- as.matrix(gendist)
+gendist <- gendist[1:775, 776:ncol(gendist)]
+
+min_dist <-  
+ggplot(ocp, aes(species, timepoint), fill)
+```
+
+
+#
