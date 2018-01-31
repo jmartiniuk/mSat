@@ -25,6 +25,18 @@ colnames(ocpPoppr) <- c("isolateId", "popprId", "C3", "", "C5", "", "C8", "", "C
 #make poppr-formatted file
 # export relevant info. Convert to genalex format in excel (Add two rows, top row containing no. loci, no. samples, no. pops. Change loci names to 1 per locus, no numbering)
 write.csv(ocpPoppr, "ocpPoppr.csv", row.names = F)
+
+
+poppr_convert <- function(data, des) {
+  dat <- read.csv(data)
+  des <- read.csv(des)
+  merge <- merge(dat, des, all.x = TRUE, rownames = F)
+  merge_mut <- mutate(merge, popprId = paste(vintage, subRegion, vineyard, fermRep, species, isolate, sep = "_"))
+  poppr <- with(merge_mut, data.frame(isolateId, popprId = paste(vintage, subRegion, vineyard, fermRep, species, isolate, sep = "_"), merge_mut[, 2:17] ))
+  return(poppr)
+}
+  
+
 #import genalex file
 ocpCommPoppr <- read.genalex("ocpPoppr.csv")
 
