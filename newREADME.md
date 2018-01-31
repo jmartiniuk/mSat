@@ -2,15 +2,7 @@
 Jay Martiniuk  
 June 11, 2016  
 
-## Microsatellite formatting
-
-### Two file types: data and design
-
-Every project should have two types of files: 
-- a data file with `plateId's and multi-locus genotypes
-- a 'design' or metadata file containing the `plateId`, `isolateId` and important information about each sample (e.g. winery, timepoint, replicate, etc.)
-- The data file is generated in Genemapper and modified in Excel depending on what R package it will be used for)
-- The design file can be made in Excel. 
+## Microsatellite data formatting and analysis
 
 ### Naming conventions
 
@@ -18,17 +10,38 @@ Every project should have two types of files:
 - `plateId`: a short, unique name used in sample submission to NAPS and in processing in GeneMapper.
 - `isolateId`: a much longer unique, descriptive name for use in R analysis
 
+***Other experiments can follow this convention optionally.
 
-Other experiments can follow this convention optionally.
+- `plateId` contains the plate catalog number and cell (e.g. P01A01). Format: PxxYzz, where xx is the two digit plate number, Y is the uppercase plate row, and zz is the two digit column number.
+- `isolateId` contains at minimum: vintage(4 digits),vineyard,fermRep_isolateNo(two digits). **eg: 2016TII05_33**
 
-- `plateId` contains the plate catalog number and cell (e.g. P01A01). Format: PxxYzz, where xx is the two digit plate number, Y is the uppercase plate row, and zz is the two digit column number. 
+The `isolateId` and `plateId` can be made in Excel.
+
+In general, any time a single digit (e.g. 1-9) is included in a sample name, it must be preceded by a 0 to ensure the samples order correctly.
+
+Other conventions:
+**Don't use any special characters in sample names.
+**Avoid hyphens.
+**design file column names, if more than one word, should be  written in camelCase (lowercase first word, uppercase second word), e.g. mlgId, isolateNo
 
 
 
-followed by the microsatellite multi-locus genotype (MLG) formatted as two columns per locus. Headers and other columns vary according to downstream use.
+### Two file types: data and design
 
-- All column names should be written in camelCase (lowercase first word, uppercase second word)
-- All single digit numbers must be preceded by a "0" (in Excel, it is necessary to change the cell type to "text" before it will allow a zero to be inserted before a number)
+Every project should have two types of files: 
+- a data file with `plateId`s and multi-locus genotypes
+- a 'design' or metadata file containing the `plateId`, `isolateId` and important information about each sample (e.g. winery, timepoint, replicate, etc.)
+- The data file is generated in GeneMapper and modified in Excel depending on what R package it will be used for)
+- The design file can be made in Excel. 
+
+####The data file
+
+- The data file should contain, at minimum, the `plateId` and the alleles at each of 11 loci. Each locus will have two columns. Locus order is arbitrary and dictated by GeneMapper. Do not change the locus order for any downstream applications.
+
+- The data file must be 'cleaned up' in Excel or OpenOffice after export from GeneMapper.
+
+Example files
+- pre-cleaning: [gm-precleaned.txt](gm_precleaned.txt)
 
 The data file is formatted with each locus having two columns, one per (diploid) allele.The loci alleles are usually listed with the smallest allele first, followed by the second. The loci alleles are labelled 'locus.1', 'locus.2'
 
