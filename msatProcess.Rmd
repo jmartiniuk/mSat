@@ -1,0 +1,155 @@
+# Microsatellite formatting Readme
+Jay Martiniuk  
+June 11, 2016  
+
+## Microsatellite data formatting and analysis
+
+### Naming conventions
+
+**S. cerevisiae winery and vineyard isolates have two names:** 
+- `plateId`: a short, unique name used in sample submission to NAPS and in processing in GeneMapper.
+- `isolateId`: a much longer unique, descriptive name for use in R analysis
+
+***Other experiments can follow this convention optionally.
+
+- `plateId` contains the plate catalog number and cell (e.g. P01A01). Format: PxxYzz, where xx is the two digit plate number, Y is the uppercase plate row, and zz is the two digit column number.
+- `isolateId` contains at minimum: vintage(4 digits),vineyard,fermRep_isolateNo(two digits). **eg: 2016TII05_33**
+
+The `isolateId` and `plateId` can be made in Excel.
+
+In general, any time a single digit (e.g. 1-9) is included in a sample name, it must be preceded by a 0 to ensure the samples order correctly.
+
+Other conventions:
+**Don't use any special characters in sample names.
+**Avoid hyphens.
+**design file column names, if more than one word, should be  written in camelCase (lowercase first word, uppercase second word), e.g. mlgId, isolateNo
+
+
+
+### Two file types: data and design
+
+Every project should have two types of files: 
+- a data file with `plateId`s and multi-locus genotypes
+- a 'design' or metadata file containing the `plateId`, `isolateId` and important information about each sample (e.g. winery, timepoint, replicate, etc.)
+- The data file is generated in GeneMapper and modified in Excel depending on what R package it will be used for)
+- The design file can be made in Excel. 
+
+###The data file
+
+The data file should contain, at minimum
+-the `plateId` and the alleles at each of 11 loci. Each locus will have two columns. Locus order is arbitrary and dictated by GeneMapper. Do not change the locus order for any downstream applications.
+
+- The data file must be 'cleaned up' in Excel or OpenOffice after export from GeneMapper, then saved as a .csv file.
+
+Example files
+- pre-cleaning: [exampleDat-precleaned.txt](exampleDat_precleaned.txt)
+- post-cleaning [exampleDat-cleaned.csv](exampleDat_cleaned.csv)
+
+Once the basic cleanup is done, the file can be modified for 
+a) import to R to use in `poppr` for population genetic analysis
+b) import to R to use in `allelematch`(to identify the differences between genotypes)
+
+Both have different requirements:
+**`allelematch`**
+ 
+- Use the .csv file layout as above, but loci alleles are labelled 'locus.1', 'locus.2'. Note that locus names beginning with numbers (e.g. 091 and 009) must be entered into `R` as letters ("O" instead of "0") as `R does not accept numbers as the first character in a variable or object.
+- for clarity, add an underscore + am on the end of your filename.
+
+Example: [exampleDat_am.csv]
+
+**`poppr`**
+
+- Data must be put into GenAlEx format, which requires the addition of two rows above the header row. Also, 
+- Only the first column of each locus should be named.
+
+- An additional column of population metadata needs to be added. Each piece of metadata is divided by an underscore. This can be made in `R` using a script I've written, or with the CONCATENATE function in Excel using your metadata.
+
+```{r_functions}
+order_alleles <- function(df) {
+  C3 <- df[df$C3.a > df$C3.b, ]
+  C3[, 2:3] <- C3[, 3:2]
+  df[match(rownames(C3), rownames(df)), ] <- C3
+#C5
+  C5 <- df[df$C5.a > df$C5.b, ]
+  C5[, 4:5] <- C5[, 5:4]
+  df[match(rownames(C5), rownames(df)), ] <- C5
+#C8
+  C8 <- df[df$C8.a > df$C8.b, ]
+  C8[, 6:7] <- C8[, 7:6]
+  df[match(rownames(C8), rownames(df)), ] <- C8
+#C4
+  C4 <- df[df$C4.a > df$C4.b, ]
+  C4[, 8:9] <- C4[, 9:8]
+  df[match(rownames(C4), rownames(df)), ] <- C4
+#O91
+  O91 <- df[df$O91.a > df$O91.b, ]
+  O91[, 10:11] <- O91[, 11:10]
+  df[match(rownames(O91), rownames(df)), ] <- O91
+#AT4
+  AT4 <- df[df$AT4.a > df$AT4.b, ]
+  AT4[, 12:13] <- AT4[, 13:12]
+  df[match(rownames(AT4), rownames(df)), ] <- AT4
+#SCAAT3
+  SCAAT3 <- df[df$SCAAT3.a > df$SCAAT3.b, ]
+  SCAAT3[, 14:15] <- SCAAT3[, 15:14]
+  df[match(rownames(SCAAT3), rownames(df)), ] <- SCAAT3
+#OO9
+  OO9 <- df[df$OO9.a > df$OO9.b, ]
+  OO9[, 16:17] <- OO9[, 17:16]
+  df[match(rownames(OO9), rownames(df)), ] <- OO9
+  return(df)
+}
+```
+
+
+- In the first cell of the top row of the file, enter the number of loci (11), and in the second cell of the top row, enter the number of samples.
+
+
+The design file is a csv titled 'wineryDes' and contains information about the *Saccharomyces* yeast isolate's location, fermentation replicate, fermentation hour isolated, fermentation stage/timepoint, species, etc. This can be made in Excel.
+ 
+ 
+Columns (in this order): 
+
+plate: "P" followed by two-digit plate number (e.g. P01, P33)
+cell:   Row letter followed by two-digit column number (e.g. A02, G12)
+plateId: plate + cell (e.g. P01E12)
+species: 
+- "Su" = *Saccharomyces uvarum*, 
+- "Sc" = *Saccharomyces cerevisiae*, 
+- "U" = Unknown species
+vintage: four-digit vintage year
+winery: uppercase two or three-letter code (e.g. LF, SB, TII) 
+
+vineyard: 
+- "B" = SBV winery fermentations (2013, 2014, 2015; 700L bins)
+- "G" = green block (OCP 2013, reps 16,17,18)
+- "HE" = home east block (SBV 2013, 2014, 2015, reps 04, 05, 06 in 2013)
+- "HW" = home west block (SBV 2013, 2014, 2015, reps 01, 02, 03 in 2013)
+- "OG" = orchard grove block (SBV 2013, 2014, 2015, reps labelled 07, 08, 09 in 2013, 01-05 are without skins in 2015, 06-08 are with skins in 2015)
+- "W" = white block (OCP 2013)
+- "WIN1,2,3" = OCP Winery fermentations 2014, 2015, inoculated with starter culture (150L) *Note: these are labelled "OCP" in the plate legends*
+- "WIN4,5,6" = OCP Winery fermentations 2014, 2015, spontaneous fermentations (150L) *Note: these are labelled "OCP" in the plate legends*
+- "Y" = yellow block (OCP 2013, 2014, 2015 - now called "Blue" at OCP)
+
+fermRep: two-digit number
+hour: three-digit number (e.g. 010, 334) or brix level
+timepoint: "0", "E", "M" or "L", to be determined based on sugar/weight loss
+isolate: isolate number from a particular fermentation-timepoint, a two-digit number (usually between 01-48)
+
+
+##Exporting genotype tables from GeneMapper
+
+*** Make sure no question marks are left in the alleles column under the genotypes tab!
+- Make a folder for your project on the Desktop (e.g. for the Okanagan Pinot Noir survey, make a directory called 'okpn')
+
+In GeneMapper,
+- Change the table setting from 'S. cerevisiae' to 'MS export.'
+- Make sure the 'Samples' tab is selected, then go to 'File -> **Export combined table...**'
+
+- In the opened window, name the document using a descriptive title (plate catalog number, mlgId, etc.) + Dat. The first letter of the name should be lowercase. **examples: p68Dat, dv10Dat**
+- Select *'Export File As Tab-delimited text (.txt)'* and *'Merge One line per sample.'* 
+
+
+
+
+
